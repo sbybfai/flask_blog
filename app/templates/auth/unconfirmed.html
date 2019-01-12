@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}激活账号{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>
+        您好, {{ current_user.username }}!
+    </h1>
+    <h3>您还没有激活账号</h3>
+    <p>
+        如果还要继续访问，请检查您的注册邮箱，应该有收到一份带有链接的激活邮件。
+    </p>
+    <p>
+        需要再次发送激活邮件?
+        <a href="{{ url_for('auth.resend_confirmation') }}">点击这里</a>
+    </p>
+</div>
+{% endblock %}

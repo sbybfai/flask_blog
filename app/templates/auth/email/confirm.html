@@ -1,0 +1,6 @@
+<b>{{ user.username }} 您好!</b>
+<p>欢迎加入<b>Sbyfai's Blog</b>!</p>
+<p>请再点击或者访问这个链接来激活您的账号:</p>
+<p>{{ url_for('auth.confirm', token=token, _external=True) }}</p>
+<hr>
+By Sbybfai's Blog
