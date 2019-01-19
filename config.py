@@ -20,7 +20,6 @@ class Config:
     FLASKY_FOLLOWERS_PER_PAGE = 50
     FLASKY_COMMENTS_PER_PAGE = 30
     FLASKY_SLOW_DB_QUERY_TIME = 0.5
-    USE_PROXY = os.environ.get("USE_PROXY")
 
     @staticmethod
     def init_app(app):
@@ -42,11 +41,6 @@ class ProductionConfig(Config):
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
-
-        # handle reverse proxy server headers
-        if getattr(cls, 'USE_PROXY', None) is not None:
-            from werkzeug.contrib.fixers import ProxyFix
-            app.wsgi_app = ProxyFix(app.wsgi_app)
 
         # email errors to the administrators
         import logging
@@ -74,6 +68,10 @@ class HerokuConfig(ProductionConfig):
     @classmethod
     def init_app(cls, app):
         ProductionConfig.init_app(app)
+
+        # handle reverse proxy server headers
+        from werkzeug.contrib.fixers import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app)
 
         # log to stderr
         import logging
