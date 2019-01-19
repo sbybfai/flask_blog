@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from flask_pagedown.fields import PageDownField
 from wtforms import TextAreaField, SubmitField, StringField, BooleanField, SelectField, ValidationError
 from wtforms.validators import DataRequired, Length, Email, Regexp
-from ..models import Role, User
+from ..models import Role, User, Category
 
 
 class EditProfileForm(FlaskForm):
@@ -35,8 +35,16 @@ class EditProfileAdminForm(FlaskForm):
 
 
 class PostForm(FlaskForm):
-    body = PageDownField("What's on your mind?", validators=[DataRequired()])
+    title = StringField("标题", validators=[DataRequired()])
+    category = SelectField("分类", validators=[DataRequired()], coerce=int)
+    summary = TextAreaField("摘要", validators=[DataRequired()])
+    body = PageDownField("内容", validators=[DataRequired()])
     submit = SubmitField('提交')
+
+    def __init__(self, *args, **kwargs):
+        super(PostForm, self).__init__(*args, **kwargs)
+        self.category.choices = [(category.id, category.name) for category
+            in Category.query.order_by(Category.name).all()]
 
 class CommentForm(FlaskForm):
     body = StringField('', validators=[DataRequired()])

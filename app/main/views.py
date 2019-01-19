@@ -37,7 +37,7 @@ def server_shutdown():
 def index():
     form = PostForm()
     if current_user.can(Permission.WRITE) and form.validate_on_submit():
-        post = Post(body=form.body.data, author=current_user._get_current_object())
+        post = Post(title=form.title.data, category_id=form.category.data, summary=form.summary.data, body=form.body.data, author=current_user._get_current_object())
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('main.index'))
@@ -137,11 +137,19 @@ def edit(id):
         abort(403)
     form = PostForm()
     if form.validate_on_submit():
+        post.title = form.title.data
+        post.category_id = form.category.data
+        post.summary = form.summary.data
         post.body = form.body.data
         db.session.add(post)
         db.session.commit()
         flash('文章已更新')
         return redirect(url_for('.post', id=post.id))
+
+
+    form.title.data = post.body
+    form.category.default = post.category_id
+    form.summary.data = post.summary
     form.body.data = post.body
     return render_template('edit_post.html', form=form)
 
