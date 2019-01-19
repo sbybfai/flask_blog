@@ -20,7 +20,6 @@ def after_request(response):
     return response
 
 
-
 @main.route('/shutdown')
 def server_shutdown():
     if not current_app.testing:
@@ -32,15 +31,8 @@ def server_shutdown():
     return 'Shutting down...'
 
 
-
 @main.route('/', methods=['GET', 'POST'])
 def index():
-    form = PostForm()
-    if current_user.can(Permission.WRITE) and form.validate_on_submit():
-        post = Post(title=form.title.data, category_id=form.category.data, summary=form.summary.data, body=form.body.data, author=current_user._get_current_object())
-        db.session.add(post)
-        db.session.commit()
-        return redirect(url_for('main.index'))
     page = request.args.get("page", 1, type=int)
     show_followed = False
     if current_user.is_authenticated:
@@ -49,9 +41,11 @@ def index():
         query = current_user.followed_posts
     else:
         query = Post.query
-    pagination = query.order_by(Post.timestamp.desc()).paginate(page, per_page=current_app.config["FLASKY_POSTS_PER_PAGE"], error_out=False)
+    pagination = query.order_by(Post.timestamp.desc()).paginate(page,
+                                                                per_page=current_app.config["FLASKY_POSTS_PER_PAGE"],
+                                                                error_out=False)
     posts = pagination.items
-    return render_template('index.html', form=form, posts=posts, show_followed=show_followed, pagination=pagination)
+    return render_template('index.html', posts=posts, show_followed=show_followed, pagination=pagination)
 
 
 @main.route('/user/<username>')
@@ -119,7 +113,7 @@ def post(id):
     page = request.args.get('page', 1, type=int)
     if page == -1:
         page = (post.comments.count() - 1) // \
-            current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
+               current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
     pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
         page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
         error_out=False)
@@ -127,6 +121,20 @@ def post(id):
     return render_template('post.html', posts=[post], form=form,
                            comments=comments, pagination=pagination)
 
+
+@main.route('/create_post', methods=['GET', 'POST'])
+@login_required
+def create_post():
+    if not current_user.can(Permission.WRITE):
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(title=form.title.data, category_id=form.category.data, summary=form.summary.data,
+                    body=form.body.data, author=current_user._get_current_object())
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('main.index'))
+    return render_template('create_post.html', form=form)
 
 
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -145,7 +153,6 @@ def edit(id):
         db.session.commit()
         flash('文章已更新')
         return redirect(url_for('.post', id=post.id))
-
 
     form.title.data = post.body
     form.category.default = post.category_id
@@ -224,7 +231,7 @@ def followed_by(username):
 @login_required
 def show_all():
     resp = make_response(redirect(url_for('.index')))
-    resp.set_cookie('show_followed', '', max_age=30*24*60*60)
+    resp.set_cookie('show_followed', '', max_age=30 * 24 * 60 * 60)
     return resp
 
 
@@ -232,7 +239,7 @@ def show_all():
 @login_required
 def show_followed():
     resp = make_response(redirect(url_for('.index')))
-    resp.set_cookie('show_followed', '1', max_age=30*24*60*60)
+    resp.set_cookie('show_followed', '1', max_age=30 * 24 * 60 * 60)
     return resp
 
 
