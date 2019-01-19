@@ -71,7 +71,6 @@ class Follow(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -237,9 +236,8 @@ class User(UserMixin, db.Model):
 
     @property
     def followed_posts(self):
-        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id) \
             .filter(Follow.follower_id == self.id)
-
 
     def to_json(self):
         json_user = {
@@ -268,7 +266,6 @@ class User(UserMixin, db.Model):
             return None
         return User.query.get(data['id'])
 
-
     def __repr__(self):
         return '<User %r>' % self.username
 
@@ -285,12 +282,17 @@ class AnonymousUser(AnonymousUserMixin):
 class Post(db.Model):
     __tablename__ = "posts"
     id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(64))
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    summary = db.Column(db.Text)
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     update_time = db.Column(db.DateTime, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
+
+
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
@@ -321,8 +323,8 @@ class Post(db.Model):
         return Post(body=body)
 
 
-
 db.event.listen(Post.body, 'set', Post.on_changed_body)
+
 
 class Comment(db.Model):
     __tablename__ = 'comments'
@@ -360,8 +362,28 @@ class Comment(db.Model):
             raise ValidationError('comment does not have a body')
         return Comment(body=body)
 
-db.event.listen(Comment.body, 'set', Comment.on_changed_body)
 
+class Category(db.Model):
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    posts = db.relationship('Post', backref='category', lazy='dynamic')
+
+    @staticmethod
+    def insert_categories():
+        categories = ['技术', '笔记', '随笔']
+        for category in categories:
+            post_category = Category.query.filter_by(name=category).first()
+            if post_category is None:
+                post_category = Category(name=category)
+                db.session.add(post_category)
+        db.session.commit()
+
+    def __repr__(self):
+        return '<Category %r>' % self.name
+
+
+db.event.listen(Comment.body, 'set', Comment.on_changed_body)
 
 login_manager.anonymous_user = AnonymousUser
 
