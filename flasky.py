@@ -78,5 +78,8 @@ def deploy():
     # ensure all users are following themselves
     User.add_self_follows()
 
+    # create or update user category
+    Category.insert_categories()
+
 if __name__ == '__main__':
     app.run(debug=1)
