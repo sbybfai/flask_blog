@@ -5,16 +5,15 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 
-    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
-    <link rel="stylesheet" href="https://cdn.staticfile.org/flat-ui/2.3.0/css/flat-ui.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/flat-ui/2.3.0/css/flat-ui.min.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
-    {{ moment.include_moment() }}
+    {{ moment.include_moment(local_js='https://cdn.bootcss.com/moment.js/2.23.0/moment-with-locales.min.js') }}
     {{ moment.locale('zh-cn') }}
-    <script src="https://cdn.staticfile.org/jquery/3.2.0/jquery.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/base.js') }}"></script>
 {% endblock %}
 {% block title %}Sbybfai's Blog{% endblock %}

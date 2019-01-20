@@ -1,8 +1,5 @@
 $(document).ready(function(){
         var the_width=Number($(window).width());
-        if(the_width<970){
-            $(".share").css("display","none");
-        }
         $(".article").fadeIn(1100);
         $(".article img").addClass("img-responsive");
 
