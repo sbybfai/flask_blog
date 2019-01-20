@@ -32,6 +32,8 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
+                <li><a href="{{ url_for('main.index') }}">首页</a></li>
+                <li><a href="{{ url_for('main.archive') }}">归档</a></li>
                 {% if current_user.can(Permission.MODERATE) %}
                 <li><a href="{{ url_for('main.moderate') }}">修改评论</a></li>
                 {% endif %}
@@ -43,6 +45,16 @@
                 {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <form class="nav-item navbar-form mr-2 py-md-2" role="search" method="get" id="searchForm" action="/search/">
+                        <div class="input-group">
+                            <input type="search" name="q" class="form-control rounded-0 f-15" placeholder="搜索" required="True">
+                            <div class="input-group-btn">
+                                <button class="btn btn-info rounded-0" type="submit"><i class="fa fa-search"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </li>
                 {% if current_user.is_authenticated%}
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">

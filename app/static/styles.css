@@ -134,7 +134,8 @@ body {
 
 .article{
     box-shadow:5px 5px 20px #CCC;
-    background-color:white;padding:20px 30px;
+    background-color:white;
+    padding:20px 30px;
     margin-bottom:40px;
 }
 .write-form-btn{

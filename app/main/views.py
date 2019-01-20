@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash, current_app, abort, make_response
 from flask_login import current_user, login_required
@@ -7,6 +8,7 @@ from ..models import User, Role, Permission, Post, Comment, Category
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm
 from ..decorators import admin_required, permission_required
 from flask_sqlalchemy import get_debug_queries
+from collections import defaultdict
 
 
 @main.after_app_request
@@ -271,3 +273,22 @@ def category(id):
     )
     posts = pagination.items
     return render_template('category.html', category=category, posts=posts, pagination=pagination)
+
+@main.route('/archive')
+def archive():
+    years = defaultdict(dict)
+    posts = Post.query.all()
+    for post in posts:
+        create_time = post.timestamp
+        year = create_time.year
+        month = create_time.month
+        day = create_time.day
+        date = "%s-%s" % (month, day)
+
+        months = years[year]
+        dateDict = months.get(month, {})
+        postList = dateDict.get(date, [])
+        postList.append(post)
+        dateDict[date] = postList
+        months[month] = dateDict
+    return render_template('archive.html', years=years)

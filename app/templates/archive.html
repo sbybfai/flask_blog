@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<div class="col-lg-8" style="background-color:white">
+    <div class="card border-0 rounded-0 mb-3">
+        <div class="card-body f-16 archive">
+            <ul class="pl-4">
+                {% for year, months in years|dictsort(reverse=True) %}
+                    <li>{{ year }} 年
+                        {% for month, dates in months|dictsort(reverse=True) %}
+                        <ul class="pl-4">
+                            <li>{{ month }} 月
+                                <ul class="pl-4">
+                                    {% for date, postList in dates|dictsort(reverse=True) %}
+                                        {% for post in postList %}
+                                        <li class="text-info">{{ date }}&nbsp;&nbsp;<a href="{{ url_for('main.post', id=post.id) }}">{{ post.title }}</a></li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        </ul>
+                        {% endfor %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
