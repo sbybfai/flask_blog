@@ -105,6 +105,7 @@ def post(id):
         db.session.commit()
         flash('您的评论已发布')
         return redirect(url_for('.post', id=post.id, page=-1))
+
     page = request.args.get('page', 1, type=int)
     if page == -1:
         page = (post.comments.count() - 1) // \
@@ -113,7 +114,7 @@ def post(id):
         page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
         error_out=False)
     comments = pagination.items
-    return render_template('post.html', posts=[post], form=form,
+    return render_template('post.html', post=post, form=form,
                            comments=comments, pagination=pagination)
 
 
