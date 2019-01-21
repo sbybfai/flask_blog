@@ -298,9 +298,11 @@ def archive():
         date = "%s-%s" % (month, day)
 
         months = years[year]
-        dateDict = months.get(month, {})
-        postList = dateDict.get(date, [])
+        dateDict = months.setdefault(month, {})
+        postList = dateDict.setdefault(date, [])
         postList.append(post)
-        dateDict[date] = postList
-        months[month] = dateDict
     return render_template('archive.html', years=years)
+
+@main.route('/about')
+def about():
+    return render_template('about.html')
