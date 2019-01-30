@@ -20,7 +20,7 @@ class Config:
     FLASKY_COMMENTS_PER_PAGE = 30
     FLASKY_SLOW_DB_QUERY_TIME = 0.5
     ENABLE_COMMENT = os.environ.get("ENABLE_COMMENT", 1)
-    ENABLE_REGISTER = os.environ.get("ENABLE_COMMENT", 0)
+    ENABLE_REGISTER = os.environ.get("ENABLE_REGISTER", 0)
 
     @staticmethod
     def init_app(app):
