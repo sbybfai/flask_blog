@@ -15,7 +15,7 @@ import sys
 import click
 from flask_migrate import Migrate, upgrade
 from app import create_app, db
-from app.models import User, Follow, Role, Permission, Post, Comment, Category
+from app.models import User, Role, Permission, Post, Comment, Category
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 migrate = Migrate(app, db)
@@ -23,7 +23,7 @@ migrate = Migrate(app, db)
 
 @app.shell_context_processor
 def make_shell_context():
-    return dict(db=db, User=User, Follow=Follow, Role=Role,
+    return dict(db=db, User=User, Role=Role,
                 Permission=Permission, Post=Post, Comment=Comment,
                 Category=Category)
 
@@ -75,11 +75,8 @@ def deploy():
     # create or update user roles
     Role.init_roles()
 
-    # ensure all users are following themselves
-    User.add_self_follows()
-
     # create or update user category
     Category.insert_categories()
 
 if __name__ == '__main__':
-    app.run(debug=1)
+    app.run(debug=1, host="0.0.0.0")

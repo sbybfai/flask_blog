@@ -8,6 +8,12 @@
         <div class="row">
             <div class="col-md-9">
             {% include '_posts.html' %}
+            {% if pagination %}
+            <div class="col-md-12 text-center">
+                {{ macros.pagination_widget(pagination, '.index') }}
+            </div>
+            {% endif %}
+
             </div>
             <div class="col-md-3 hidden-xs hidden-sm">
                 <div class="share mrl the-font" style="background:#fbfaf5;box-shadow:5px 5px 20px #CCC;width:260px;">
@@ -35,11 +41,6 @@
                     </div>
                 </div>
             </div>
-            {% if pagination %}
-            <div  class="col-md-12">
-                {{ macros.pagination_widget(pagination, '.index') }}
-            </div>
-            {% endif %}
         </div>
     </div>
 {% endblock %}

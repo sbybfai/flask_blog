@@ -1,9 +1,9 @@
-from flask import render_template, redirect, request, url_for, flash
+from flask import render_template, redirect, request, url_for, flash, current_app, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
 from ..models import User, db, Category
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm, PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm
-from ..email import send_email
+from ..myemail import send_email
 
 
 @auth.route("/login", methods=['GET', 'POST'])
@@ -31,6 +31,8 @@ def logout():
 
 @auth.route('/register', methods=["GET", "POST"])
 def register():
+    if not current_app.config["ENABLE_REGISTER"]:
+        abort(403)
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(email=form.email.data, username=form.username.data, password=form.password.data)
@@ -98,6 +100,8 @@ def change_password():
 
 @auth.route('/reset', methods=['GET', 'POST'])
 def password_reset_request():
+    if not current_app.config["ENABLE_REGISTER"]:
+        abort(403)
     if not current_user.is_anonymous:
         return redirect(url_for('main.index'))
     form = PasswordResetRequestForm()

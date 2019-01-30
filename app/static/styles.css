@@ -47,7 +47,6 @@ ul.comments {
     margin: 16px 0px 0px 0px;
 }
 ul.comments li.comment {
-    margin-left: 32px;
     padding: 8px;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -57,7 +56,7 @@ ul.comments li.comment:nth-child(1) {
 ul.comments li.comment:hover {
     background-color: #f0f0f0;
 }
-div.comment-date {
+div.comment-replay{
     float: right;
 }
 div.comment-author {
@@ -67,18 +66,12 @@ div.comment-thumbnail {
     position: absolute;
 }
 div.comment-content {
-    margin-left: 48px;
     min-height: 48px;
 }
-div.comment-form {
-    margin: 16px 0px 16px 32px;
+div.comment-op{
+    float: right;
 }
-div.pagination {
-    width: 100%;
-    text-align: right;
-    padding: 0px;
-    margin: 0px;
-}
+
 div.flask-pagedown-preview {
     margin: 10px 0px 10px 0px;
     border: 1px solid #e0e0e0;
@@ -101,9 +94,6 @@ div.flask-pagedown-preview h3 {
 }
 .post-body h3 {
     font-size: 120%;
-}
-.table.followers tr {
-    border-bottom: 1px solid #e0e0e0;
 }
 
 h1 {

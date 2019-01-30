@@ -1,4 +1,4 @@
-$(document).ready(function(){
+$(function(){
         var the_width=Number($(window).width());
         $(".article").fadeIn(1100);
         $(".article img").addClass("img-responsive");
@@ -41,3 +41,5 @@ $(document).ready(function(){
             $(this).removeClass("label-warning");
         });
     })
+
+

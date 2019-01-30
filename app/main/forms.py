@@ -1,8 +1,9 @@
 from flask_wtf import FlaskForm
+from flask_wtf.html5 import URLField, EmailField
 from flask_pagedown.fields import PageDownField
-from wtforms import TextAreaField, SubmitField, StringField, BooleanField, SelectField, ValidationError
+from wtforms import TextAreaField, SubmitField, StringField, BooleanField, SelectField, ValidationError, IntegerField, RadioField
 from wtforms.validators import DataRequired, Length, Email, Regexp
-from ..models import Role, User, Category
+from ..models import Role, User, Category, Comment
 
 
 class EditProfileForm(FlaskForm):
@@ -16,9 +17,9 @@ class EditProfileAdminForm(FlaskForm):
                                               Regexp('^[\u4e00-\u9fa5_a-zA-Z0-9]+$', 0,
                                                      '用户名至少包含一个字母、数字或下划线')])
     confirmed = BooleanField('激活邮箱')
-    role = SelectField('Role', coerce=int)
-    about_me = TextAreaField("About me")
-    submit = SubmitField("Submit")
+    role = SelectField('角色', coerce=int)
+    about_me = TextAreaField("关于我")
+    submit = SubmitField("提交")
 
     def __init__(self, user, *args, **kwargs):
         super(EditProfileAdminForm, self).__init__(*args, **kwargs)
@@ -47,6 +48,23 @@ class PostForm(FlaskForm):
             in Category.query.order_by(Category.name).all()]
 
 class CommentForm(FlaskForm):
-    body = StringField('', validators=[DataRequired()])
+    name = StringField('姓名', validators=[DataRequired()])
+    email = EmailField('邮箱', validators=[Email()])
+    url = URLField('网址', validators=[DataRequired()])
+    body = TextAreaField('内容', validators=[DataRequired()])
+    replay_id = IntegerField(default=None)
     submit = SubmitField('提交')
+
+    def validate_website(self, field):
+        if field.data[:4] != "http" and field.data[:5] != "https":
+            raise ValidationError("请输入正确网址")
+
+    def validate_replay_id(self, field):
+        if field.data:
+            if Comment.query.get(field.data) is None:
+                raise ValidationError("回复出错")
+
+
+
+
 

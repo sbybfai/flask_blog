@@ -8,9 +8,44 @@
     <h1>评论管理</h1>
 </div>
 {% set moderate = True %}
-{% include '_comments.html' %}
+{% if comments|length < 1 %}
+<h6>暂无评论</h6>
+{% else %}
+    <ul class="comments">
+        {% for comment in comments %}
+        <li class="comment">
+            <div class="comment-content">
+                <div class="comment-op">
+                    {% if comment.disabled%}
+                       <a href="{{ url_for('main.moderate_enable', id=comment.id) }}" class="btn btn-primary">恢复</a>
+                    {% else %}
+                        <a href="{{ url_for('main.moderate_disable', id=comment.id) }}" class="btn btn-danger">屏蔽</a>
+                    {% endif %}
+                </div>
+                <div class="comment-author">
+                    <a href="{{ comment.url }}">
+                        {{ comment.user_name }}
+                    </a>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ moment(comment.timestamp).format('LL HH:mm:ss') }}
+                </div>
+                <div class="comment-body">
+                    {% if comment.replay %}
+                        <a href="#"  tabindex="0" title="" data-content="{{ comment.replay.body }}" data-toggle="popover"  data-trigger="hover">@{{ comment.replay.user_name }}：</a>
+                    {% endif %}
+
+                    {% if comment.body_html %}
+                        {{ comment.body_html | safe }}
+                    {% else %}
+                        {{ comment.body }}
+                    {% endif %}
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+{% endif %}
 {% if pagination %}
-<div class="pagination">
+<div class="col-md-12 text-center">
     {{ macros.pagination_widget(pagination, '.moderate') }}
 </div>
 {% endif %}

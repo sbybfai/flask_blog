@@ -1,7 +1,8 @@
 import time
-from datetime import datetime
-from flask import render_template, request, redirect, url_for, flash, current_app, abort, make_response
+from flask import render_template, request, redirect, url_for, flash, current_app, abort, session, Response
 from flask_login import current_user, login_required
+from sqlalchemy import or_
+
 from . import main
 from .. import db
 from ..models import User, Role, Permission, Post, Comment, Category
@@ -9,7 +10,6 @@ from .forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm
 from ..decorators import admin_required, permission_required
 from flask_sqlalchemy import get_debug_queries
 from collections import defaultdict
-
 
 @main.after_app_request
 def after_request(response):
@@ -20,7 +20,6 @@ def after_request(response):
                 % (query.statement, query.parameters, query.duration,
                    query.context))
     return response
-
 
 @main.route('/shutdown')
 def server_shutdown():
@@ -95,20 +94,12 @@ def edit_profile_admin(id):
     return render_template('edit_profile.html', form=form, user=user)
 
 
-@main.route('/post/<int:id>', methods=['GET', 'POST'])
+@main.route('/post/<int:id>', methods=['GET'])
 def post(id):
     post = Post.query.get_or_404(id)
     form = CommentForm()
-    if form.validate_on_submit():
-        comment = Comment(body=form.body.data,
-                          post=post,
-                          author=current_user._get_current_object())
-        db.session.add(comment)
-        db.session.commit()
-        flash('您的评论已发布')
-        return redirect(url_for('.post', id=post.id, page=-1))
-
     page = request.args.get('page', 1, type=int)
+
     if page == -1:
         page = (post.comments.count() - 1) // \
                current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
@@ -116,9 +107,8 @@ def post(id):
         page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
         error_out=False)
     comments = pagination.items
-    return render_template('post.html', post=post, form=form,
+    return render_template('post.html', post=post, postForm=form,
                            comments=comments, pagination=pagination)
-
 
 @main.route('/create_post', methods=['GET', 'POST'])
 @login_required
@@ -158,6 +148,7 @@ def edit(id):
     form.body.data = post.body
     return render_template('edit_post.html', form=form)
 
+
 @main.route('/delete/<int:id>')
 @login_required
 def delete_post(id):
@@ -168,73 +159,6 @@ def delete_post(id):
     db.session.commit()
     flash('删除成功')
     return redirect(url_for('.index'))
-
-
-
-@main.route('/follow/<username>')
-@login_required
-@permission_required(Permission.FOLLOW)
-def follow(username):
-    user = User.query.filter_by(username=username).first()
-    if user is None:
-        flash('无效用户')
-        return redirect(url_for('.index'))
-    if current_user.is_following(user):
-        flash('您已经关注了该用户')
-        return redirect(url_for('.user', username=username))
-    current_user.follow(user)
-    flash('你现在关注了 %s.' % username)
-    return redirect(url_for('.user', username=username))
-
-
-@main.route('/unfollow/<username>')
-@login_required
-@permission_required(Permission.FOLLOW)
-def unfollow(username):
-    user = User.query.filter_by(username=username).first()
-    if user is None:
-        flash('无效用户')
-        return redirect(url_for('.index'))
-    if not current_user.is_following(user):
-        flash('您还没有关注该用户')
-        return redirect(url_for('.user', username=username))
-    current_user.unfollow(user)
-    flash('您已不再关注 %s anymore.' % username)
-    return redirect(url_for('.user', username=username))
-
-
-@main.route('/followers/<username>')
-def followers(username):
-    user = User.query.filter_by(username=username).first()
-    if user is None:
-        flash('无效用户.')
-        return redirect(url_for('.index'))
-    page = request.args.get('page', 1, type=int)
-    pagination = user.followers.paginate(
-        page, per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
-        error_out=False)
-    follows = [{'user': item.follower, 'timestamp': item.timestamp}
-               for item in pagination.items]
-    return render_template('followers.html', user=user, title="Followers of",
-                           endpoint='.followers', pagination=pagination,
-                           follows=follows)
-
-
-@main.route('/followed_by/<username>')
-def followed_by(username):
-    user = User.query.filter_by(username=username).first()
-    if user is None:
-        flash('无效用户')
-        return redirect(url_for('.index'))
-    page = request.args.get('page', 1, type=int)
-    pagination = user.followed.paginate(
-        page, per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
-        error_out=False)
-    follows = [{'user': item.followed, 'timestamp': item.timestamp}
-               for item in pagination.items]
-    return render_template('followers.html', user=user, title="Followed by",
-                           endpoint='.followed_by', pagination=pagination,
-                           follows=follows)
 
 
 
@@ -302,6 +226,48 @@ def archive():
         postList = dateDict.setdefault(date, [])
         postList.append(post)
     return render_template('archive.html', years=years)
+
+
+@main.route('/comment/<int:id>', methods=['POST'])
+def add_comment(id):
+    if not current_user.can(Permission.COMMENT):
+        abort(403)
+    now_time = time.time()
+    last_time = session.get("last_comment_time")
+    if last_time and now_time - last_time < 60:
+        abort(Response('发言太频繁'))
+
+    session['last_comment_time'] = now_time
+    post = Post.query.get_or_404(id)
+    form = CommentForm()
+    replay_id = form.replay_id.data
+    if replay_id:
+        Comment.query.get_or_404(replay_id)
+
+    comment = Comment(body=form.body.data,
+                      post=post,
+                      user_name=form.name.data,
+                      email=form.email.data,
+                      url=form.url.data,
+                      replay_id = replay_id,
+                      )
+    db.session.add(comment)
+    db.session.commit()
+    flash('您的评论已发布')
+    return redirect(url_for('.post', id=post.id, page=-1))
+
+@main.route('/search/')
+def search():
+    key_word = request.args.get('keyWord', "")
+    key_word = "%" + key_word + "%"
+    page = request.args.get("page", 1, type=int)
+    pagination = Post.query.filter(or_(Post.title.like(key_word), Post.summary.like(key_word)))\
+        .order_by(Post.timestamp.desc())\
+        .paginate(page,per_page=current_app.config["FLASKY_POSTS_PER_PAGE"],error_out=False)
+    posts = pagination.items
+    categories = Category.query.all()
+    return render_template('index.html', posts=posts, pagination=pagination, categories=categories)
+
 
 @main.route('/about')
 def about():

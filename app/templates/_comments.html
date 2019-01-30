@@ -1,22 +1,73 @@
-<ul class="comments">
-    {% for comment in comments %}
-    <li class="comment">
-        <div class="comment-thumbnail">
-            <a href="{{ url_for('.user', username=comment.author.username) }}">
-                <img class="img-rounded profile-thumbnail" src="{{ comment.author.gravatar(size=40) }}">
-            </a>
-        </div>
-        <div class="comment-content">
-            <div class="comment-date">{{ moment(comment.timestamp).fromNow() }}</div>
-            <div class="comment-author"><a href="{{ url_for('.user', username=comment.author.username) }}">{{ comment.author.username }}</a></div>
-            <div class="comment-body">
-                {% if comment.body_html %}
-                    {{ comment.body_html | safe }}
-                {% else %}
-                    {{ comment.body }}
-                {% endif %}
-            </div>
-        </div>
-    </li>
-    {% endfor %}
-</ul>
+{% if comments|length < 1 %}
+<h6>暂无评论</h6>
+{% else %}
+    <ul class="comments">
+        {% for comment in comments %}
+            {% if comment.disabled != True %}
+                <li class="comment">
+                    <div class="comment-content">
+                        {% if current_user.can(Permission.COMMENT) %}
+                             <div class="comment-replay">
+                                <button class="replay" type="button" onclick="replay({{ comment.id }})">回复</button>
+                            </div>
+                        {% endif %}
+                        <div class="comment-author">
+                            <a href="{{ comment.url }}">
+                                {{ comment.user_name }}
+                            </a>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ moment(comment.timestamp).format('LL HH:mm:ss') }}
+                        </div>
+                        <div class="comment-body">
+                            {% if comment.replay %}
+                                <a href="#"  tabindex="0" title="" data-content="{{ comment.replay.body }}" data-toggle="popover"  data-trigger="hover">@{{ comment.replay.user_name }}：</a>
+                            {% endif %}
+
+                            {% if comment.body_html %}
+                                {{ comment.body_html | safe }}
+                            {% else %}
+                                {{ comment.body }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<!-- Modal -->
+<div class="modal fade" id="replayModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h5 class="modal-title" id="myModalLabel">回复评论</h5>
+      </div>
+      <div class="modal-body">
+          <form class="form" method="post" id="replayForm" action="{{ url_for('main.add_comment', id=post.id) }}">
+              {{ postForm.hidden_tag() }}
+              {{ postForm.replay_id(type="hidden", id="replayId") }}
+              <div class="form-group">
+                  {{ postForm.name(class="form-control", placeholder="名字") }}
+              </div>
+              <div class="form-group">
+                  {{ postForm.email(class="form-control", placeholder="邮箱") }}
+              </div >
+              <div class="form-group">
+                  {{ postForm.url(class="form-control", placeholder="网址") }}
+              </div>
+              <div class="form-group">
+                  {{ postForm.body(class="form-control", placeholder="内容") }}
+              </div>
+          </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="$('#replayForm').submit()">提交</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+

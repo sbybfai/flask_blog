@@ -17,9 +17,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = True
     FLASKY_POSTS_PER_PAGE = 10
-    FLASKY_FOLLOWERS_PER_PAGE = 50
     FLASKY_COMMENTS_PER_PAGE = 30
     FLASKY_SLOW_DB_QUERY_TIME = 0.5
+    ENABLE_COMMENT = os.environ.get("ENABLE_COMMENT", 1)
+    ENABLE_REGISTER = os.environ.get("ENABLE_COMMENT", 0)
 
     @staticmethod
     def init_app(app):
@@ -104,7 +105,6 @@ class UnixConfig(ProductionConfig):
         file_handler = StreamHandler()
         file_handler.setLevel(logging.INFO)
         app.logger.addHandler(file_handler)
-
 
 
 config = {
