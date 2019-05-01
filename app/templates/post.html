@@ -5,8 +5,21 @@
 {% block title %}Flasky - Post{% endblock %}
 
 {% block page_content %}
-{% include '_post_detail.html' %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-9">
+            {% include '_post_detail.html' %}
+        </div>
+        <div class="col-md-3 hidden-xs hidden-sm">
+            <div id="toc"></div>
+        </div>
+    </div>
+</div>
+
 <h4 id="comments"><i class="fa fa-commenting" aria-hidden="true"></i> 评论：</h4>
+
+
 {% include '_comments.html' %}
 {% if current_user.can(Permission.COMMENT) %}
 
@@ -47,5 +60,6 @@
 
 {% block scripts %}
     {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/md-toc.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/post.js') }}"></script>
 {% endblock %}

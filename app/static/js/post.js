@@ -12,6 +12,13 @@ $(function(){
     $("[data-toggle='popover']").popover();
     $("table").addClass("table table-bordered table-striped");
 
+   new Toc( 'post-body',{
+        'level':3,
+        'top':100,
+        'class':'toc',
+        'targetId':'toc'
+    } );
+
 });
 
 function replay(id){
